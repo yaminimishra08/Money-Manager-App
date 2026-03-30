@@ -1,0 +1,262 @@
+<!-- Declare the document type and HTML5 version -->
+<!DOCTYPE html>
+<!-- Root element of the web page -->
+<html lang="en">
+
+<!-- Head Section -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Shows the title in the browser tab -->
+    <title>Money Manager - Add Transaction</title>
+    <!-- Links external css file -->
+    <link rel="stylesheet" href="view.css">
+</head>
+
+<!--==========================
+Main content of the web page 
+===============================-->
+<body>
+
+    <div class="container">
+        <!-- Header Section -->
+        <h2>Filter</h2>
+
+        <!-- Filters Wrapper -->
+        <div class="filters">
+
+            <div class="form-group">
+                <label>Category</label>
+                <select id="filterCategory">
+                    <option value="">All</option>
+                    <option value="Income">Income</option>
+                    <option value="Expense">Expense</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Sub-Category</label>
+                <select id="filterSub">
+                    <option value="">All</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>From</label>
+                <input type="date" id="fromDate">
+            </div>
+
+            <div class="form-group">
+                <label>To</label>
+                <input type="date" id="toDate">
+            </div>
+
+            <div class="form-group">
+                <label>Sort By</label>
+                <select id="sort">
+                    <option value="">None</option>
+                    <option value="dateDesc">Date (Newest)</option>
+                    <option value="dateAsc">Date (Oldest)</option>
+                    <option value="amountDesc">Amount (High)</option>
+                    <option value="amountAsc">Amount (Low)</option>
+                </select>
+            </div>
+
+        </div>
+
+        <!-- Transactions Table -->
+        <h2>Transactions</h2>
+
+        <!-- Table Wrapper (FIX ADDED) -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Sub</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Overall Summary -->
+        <h2>Summary</h2>
+
+        <!-- Summary Wrapper (FIX ADDED) -->
+        <div class="summary">
+            <p id="income"></p>
+            <p id="expense"></p>
+            <p id="balance"></p>
+        </div>
+
+    </div>
+
+     <!--==================================
+        Strarting of Javascript function
+    =======================================-->
+    <script>
+        // =========================
+        // Main app
+        // =========================
+        class App {
+            constructor() {
+                // Load transactions from localStorage safely
+                try {
+                    this.transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+                } catch {
+                    this.transactions = [];
+                }
+
+                // DOM references
+                this.tableBody = document.getElementById("tableBody");
+                this.incomeEl = document.getElementById("income");
+                this.expenseEl = document.getElementById("expense");
+                this.balanceEl = document.getElementById("balance");
+
+                this.filterCategory = document.getElementById("filterCategory");
+                this.filterSub = document.getElementById("filterSub");
+                this.fromDate = document.getElementById("fromDate");
+                this.toDate = document.getElementById("toDate");
+                this.sort = document.getElementById("sort");
+
+                this.init();
+            }
+
+            // Initialization
+            init() {
+                this.loadSubFilter();
+                this.addEvents();
+                this.applyFilters();
+            }
+
+            // Dynamically loads the subcategory for the filters
+            loadSubFilter() {
+                // Clear all except 'All'
+                this.filterSub.innerHTML = '<option value="">All</option>';
+
+                const subSet = new Set();
+                this.transactions.forEach(t => subSet.add(t.subCategory));
+
+                subSet.forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.textContent = sub;
+                    this.filterSub.appendChild(option);
+                });
+            }
+
+            // Displays the transactions in the below given table
+            display(data) {
+                this.tableBody.innerHTML = "";
+                let income = 0, expense = 0;
+
+                data.forEach(t => {
+                    if (t.category === "Income") income += t.amount;
+                    else expense += t.amount;
+
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${t.date}</td>
+                        <td>${t.category}</td>
+                        <td>${t.subCategory}</td>
+                        <td>${t.description || "-"}</td>
+                        <td>${t.amount}</td>
+                        <td>
+                            <button onclick="app.deleteById(${t.id})">Delete</button>
+                            <button onclick="app.edit(${t.id})">Edit</button>
+                        </td>
+                    `;
+                    this.tableBody.appendChild(row);
+                });
+
+                this.incomeEl.textContent = "Total Income: " + income;
+                this.expenseEl.textContent = "Total Expense: " + expense;
+                this.balanceEl.textContent = "Net Balance: " + (income - expense);
+            }
+
+            // Delete the transactions
+            deleteById(id) {
+                if (!confirm("Delete transaction?")) return;
+                this.transactions = this.transactions.filter(t => t.id !== id);
+                localStorage.setItem("transactions", JSON.stringify(this.transactions));
+                this.loadSubFilter(); // update subcategory filter
+                this.applyFilters();
+            }
+
+            // Edit the transactions
+            edit(id) {
+                const transaction = this.transactions.find(t => t.id === id);
+                localStorage.setItem("editTransaction", JSON.stringify(transaction));
+                window.location.href = "index.html";
+            }
+
+            // Applies the filter + sort options
+            applyFilters() {
+                let data = [...this.transactions];
+
+                if (this.filterCategory.value) {
+                    data = data.filter(t => t.category === this.filterCategory.value);
+                }
+                if (this.filterSub.value) {
+                    data = data.filter(t => t.subCategory === this.filterSub.value);
+                }
+                if (this.fromDate.value) {
+                    data = data.filter(t => t.date >= this.fromDate.value);
+                }
+                if (this.toDate.value) {
+                    data = data.filter(t => t.date <= this.toDate.value);
+                }
+
+                switch (this.sort.value) {
+                    case "dateDesc": data.sort((a,b)=>b.date.localeCompare(a.date)); break;
+                    case "dateAsc": data.sort((a,b)=>a.date.localeCompare(b.date)); break;
+                    case "amountDesc": data.sort((a,b)=>b.amount-a.amount); break;
+                    case "amountAsc": data.sort((a,b)=>a.amount-b.amount); break;
+                }
+
+                this.display(data);
+            }
+
+            // Attach the event listener for applying filter to change 
+            addEvents() {
+                this.filterCategory.addEventListener("change", () => {
+                    this.loadSubFilterDynamic();
+                    this.applyFilters();
+                });
+                this.filterSub.addEventListener("change", () => this.applyFilters());
+                this.fromDate.addEventListener("change", () => this.applyFilters());
+                this.toDate.addEventListener("change", () => this.applyFilters());
+                this.sort.addEventListener("change", () => this.applyFilters());
+            }
+
+            // Loads the sub filter category
+            loadSubFilterDynamic() {
+                const selectedCategory = this.filterCategory.value;
+                let subs = new Set();
+
+                this.transactions.forEach(t => {
+                    if (!selectedCategory || t.category === selectedCategory)
+                        subs.add(t.subCategory);
+                });
+
+                this.filterSub.innerHTML = '<option value="">All</option>';
+                subs.forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.textContent = sub;
+                    this.filterSub.appendChild(option);
+                });
+            }
+        }
+
+        // Make app global for inline calls
+        const app = new App();
+    </script>
+
+</body>
+</html>

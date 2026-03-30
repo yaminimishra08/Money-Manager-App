@@ -1,0 +1,182 @@
+<!-- Declare the document type and HTML5 version-->
+<!DOCTYPE html>
+<!-- Root element of the web page -->
+<html lang="en">
+<!--=============
+    Head Section
+==================-->
+<head>
+    <meta charset="UTF-8">
+    <!-- MAkes page responsive on mobile view -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Shows the title the browser tab-->
+    <title>Login</title>
+</head>
+
+<!--===============
+    Style Section
+===================-->
+<style>
+    /* Resets the default browser setting */
+    *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Centralise everything in the middle of the screen */
+    body{
+        display: flex;
+        background: #0f0f0f;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #e0e0e0;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    /* main box where the form is placed */
+    .container {
+        width: 350px;
+        background: #1a1a1a;
+        padding: 25px;
+        border-radius: 10px;
+    }
+
+    /* Main Heading Styling */
+    h2 {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    /*Styling the label by adding space*/
+    label {
+        display: block;
+        margin-top: 12px;
+    }
+
+    /*Input fields styling*/
+    input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        background: #121212;
+        color: white;
+        border: 1px solid #333;
+        border-radius: 5px;
+    }
+
+    /*Button styling*/
+    button {
+        flex: 1;
+        padding: 10px;
+        background-color: #2a2a2a;
+        border-radius: 5px;
+        color:white;
+        cursor: pointer;
+        border: none;
+    }
+
+    /*styling button to stay align side by side */
+    .buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+    }
+    /*hover effect on mouse click*/
+    button:hover {
+        background: #444;
+    }
+
+    /*error message*/
+    small {
+        color: red;
+        font-size: 12px;
+    }
+</style>
+
+<!--=========================
+Main Content of the web page
+=============================-->
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <h2>Account Access</h2>
+
+        <!--Sign up and Login Form-->
+        <form id="loginForm">
+            <!-- Username -->
+            <label>Username</label>
+            <input type="text" id="username" required>
+            <!--Shows the error on username if id typed wrong username-->
+            <small id="userError"></small>
+
+            <!-- Password -->
+            <label>Password</label>
+            <input type="password" id="password" required>
+            <!-- Shows the error on password if the password is not written in formated form -->
+            <small id="passError"></small>
+            
+            <div class="buttons">
+                
+                <!-- Sign up Button -->
+                <button type="button" onclick="signUp()">Sign Up</button>
+                
+                <!--Login Button-->
+                <button type="button" onclick="login()">Login</button>
+            </div>
+        </form>
+    </div>
+
+    <!--================================
+    Strarting of Javascript function
+    ====================================-->
+    <script>
+        //signup function
+        function signUp() {
+            //username
+            let username = document.getElementById("username").value;
+            
+            //password
+            let password = document.getElementById("password").value;
+            
+            //get existing users
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            
+            //adds a new user
+            users.push({username:username, password:password});
+            
+            // saves back
+            localStorage.setItem("users",JSON.stringify(users));
+            alert("Signup successful")
+        }
+
+        function login() {
+            //username
+            let username = document.getElementById("username").value;
+            
+            //password
+            let password = document.getElementById("password").value;
+            
+            //get existing users
+            let users = JSON.parse(localStorage.getItem("users")) || [];
+            
+            //checks if user exists
+            let found = users.find(u => u.username === username && u.password === password);
+
+            // logins in when user succcesfully found
+            if (found) {
+                alert("Login Successful");
+            } else {
+                alert ("Invalid Credentials");
+            }
+
+            // mark user as logged in
+            localStorage.setItem("isLoggedIn", "true");
+            
+            // redirect to transaction page
+            window.location.href = "transaction.html"; //links to transaction page 
+        }
+    </script>
+</body>
+</html>
