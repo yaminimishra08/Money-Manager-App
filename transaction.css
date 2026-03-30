@@ -1,0 +1,102 @@
+/* Resets the default browser setting */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* styling page background and center layout */
+body {
+    background: #0f0f0f;
+    font-family: Arial, sans-serif;
+    color: #e0e0e0;
+    display: flex; /*flex*/
+    justify-content: center; /*this centralise the content*/
+    padding: 40px;
+}
+
+/* main container styling */
+.container {
+    width: 400px;
+    background: #1a1a1a;
+    padding: 25px;
+    border-radius: 10px;
+}
+
+/* heading styling */
+header {
+    text-align: center; /*centralise the content*/  
+    margin-bottom: 20px;
+}
+
+/* styling the h1 heading */
+header h1 {
+    margin-bottom: 5px;
+}
+
+/* styling the h3 header tag*/
+header h3 {
+    color: #bbb;
+    font-weight: normal;
+}
+
+/* labels styling */
+label {
+    display: block;
+    margin-top: 15px;
+}
+
+/* inputs and dropdown of categories */
+input,
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    background: #121212;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 5px;
+}
+
+/* radio buttons styling */
+.radio-group {
+    display: flex; /*flex display*/
+    gap: 20px; /*show the gap between the buttons*/
+    margin-top: 0;
+}
+
+/*styling the items inside the radio*/
+.radio-item {
+    display: flex; /*shows and display the flex*/
+    align-items: center; /*align all in center*/
+    gap: 5px;
+    cursor: pointer; /*mouse pointer*/
+}
+
+/* button styling */
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background: #2a2a2a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer; /*mouse pointer*/
+}
+
+/*styling when mouse hovers the text*/
+button:hover {
+    background: #444;
+}
+
+/* error text styling */
+.error {
+    color: red;
+    font-size: 12px;
+}
+
+/* highlight invalid input */
+.invalid {
+    border: 1px solid red;
+}

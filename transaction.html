@@ -1,0 +1,214 @@
+<!-- Declare the document type and HTML5 version -->
+<!DOCTYPE html>
+<!-- Root element of the web page -->
+<html lang="en">
+
+<!--===============
+    Head Section 
+===================-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Shows the title in the browser tab -->
+    <title>Money Manager - Add Transaction</title>
+    <!-- Links external css file -->
+    <link rel="stylesheet" href="transaction.css">
+</head>
+
+<!--==========================
+Main content of the web page 
+===============================-->
+<body>
+
+    <div class="container">
+    <!-- Header Section -->
+    <header>
+        <h1>Money Manager</h1>
+        <h3>Add Transactions</h3>
+    </header>
+
+    <!--================
+        Making form 
+    ====================-->
+    <form id="transactionForm">
+        
+        <!--Amount-->
+        <label>Amount</label>
+        <input type="number" id="amount" placeholder="Enter Amount">
+        <!-- Checks the error if amount filled wrong -->
+        <small class="error" id="amountError"></small>
+
+        <!--Date--> 
+        <label>Date</label>
+        <input type="date" id="date">
+        <!-- Checks if the date is selected wrong (in future)-->
+        <small class="error" id="dateError"></small>
+        
+        <!--Adding category-->
+        <label>Category</label>
+        <div class="radio-group">
+            <label class="radio-item">
+                <!--Choosing income-->
+                <input type="radio" name="category" value="Income">
+                <span>Income</span>
+            </label>
+            
+            <label class="radio-item">
+                <!-- choosing expense-->
+                <input type="radio" name="category" value="Expense">
+                <span>Expense</span>
+            </label>
+        </div>
+        <small class="error" id="categoryError"></small>
+        
+        <!--Sub Category-->
+        <label>Sub-Category</label>
+        <select id = "subCategory">
+            <option value="">Select Sub-Category</option>
+        </select>
+        <small class="error" id="subError"></small>
+            
+        <!--Description-->
+        <label>Description</label>
+        <input type="text" id="description" placeholder="Enter Description" maxlength="100"> <!-- gives a maxlength to the text-->
+        
+        <!--Submit Button to save the form-->
+        <button type="submit">Save</button>
+    </form>
+
+    </div>
+
+    <!--==================================
+        Strarting of Javascript function
+    =======================================-->
+    <script>
+    // get saved data or start with empty list
+    let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+
+    //form
+    let form = document.getElementById("transactionForm");
+    let dateInput = document.getElementById("date"); // choosing date
+    let subCategory = document.getElementById("subCategory"); // choosing subcategory
+
+    let editId = null;
+
+    // this auto fill today's date
+    dateInput.value = new Date().toISOString().split("T")[0];
+
+    // load subcategories when category choosed by the user
+    document.querySelectorAll('input[name="category"]').forEach(radio => {
+        radio.addEventListener("change", function () {
+            loadSubCategories(this.value);
+        });
+    });
+
+    // function to load sub categories
+    function loadSubCategories(category) {
+        subCategory.innerHTML = '<option value="">Select Sub-Category</option>'; //user choose the subcategory
+
+        let options;
+
+        //if choice is income
+        if (category === "Income") {
+            options = ["Salary", "Allowances", "Bonus", "Petty Cash", "Others"];
+        } else { //if choice is expense
+            options = ["Rent", "Food", "Shopping", "Entertainment", "Others"];
+        }
+
+        options.forEach(function (item) {
+            let option = document.createElement("option");
+            option.value = item;
+            option.textContent = item;
+            subCategory.appendChild(option);
+        });
+    }
+
+    // check if edit data exists
+    let editData = JSON.parse(localStorage.getItem("editTransaction"));
+    if (editData) {
+        document.getElementById("amount").value = editData.amount;
+        dateInput.value = editData.date;
+
+        document.querySelectorAll('input[name="category"]').forEach(r => {
+            if (r.value === editData.category) r.checked = true;
+        });
+
+        loadSubCategories(editData.category);
+        subCategory.value = editData.subCategory;
+
+        document.getElementById("description").value = editData.description;
+
+        editId = editData.id;
+    }
+
+    // form submit
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        let amount = Number(document.getElementById("amount").value);
+        let date = dateInput.value;
+        let category = document.querySelector('input[name="category"]:checked')?.value;
+        let sub = subCategory.value;
+        let desc = document.getElementById("description").value.trim();
+
+        // clear old errors
+        document.querySelectorAll(".error").forEach(e => e.textContent = "");
+
+        let valid = true;
+
+        // amount check
+        if (!amount || amount <= 0) {
+            document.getElementById("amountError").textContent = "Enter valid amount";
+            valid = false;
+        }
+
+        // date check
+        let today = new Date().toISOString().split("T")[0];
+        if (!date || date > today) {
+            document.getElementById("dateError").textContent = "Invalid date";
+            valid = false;
+        }
+
+        // category check
+        if (!category) {
+            alert("Select category");
+            valid = false;
+        }
+
+        // sub category check
+        if (!sub) {
+            alert("Select sub-category");
+            valid = false;
+        }
+
+        if (!valid) return;
+
+        let transaction = {
+            id: Date.now(),
+            amount: amount,
+            date: date,
+            category: category,
+            subCategory: sub,
+            description: desc
+        };
+
+        // update or add
+        if (editId) {
+            let index = transactions.findIndex(t => t.id === editId);
+            transactions[index] = { ...transaction, id: editId };
+            localStorage.removeItem("editTransaction");
+        } else {
+            transactions.push(transaction);
+        }
+
+        localStorage.setItem("transactions", JSON.stringify(transactions));
+
+        alert("Saved successfully");
+
+        // redirect to view page
+        window.location.href = "view.html";
+    });
+</script>
+
+</body>
+</html>
